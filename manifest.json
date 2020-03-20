@@ -1,0 +1,6 @@
+{
+    "name": "WhatsApp Contact Downloader",
+    "version": "0.0.1",
+    "description": "Download contacts sent to your WhatsApp easily.",
+    "manifest_version": 2
+}

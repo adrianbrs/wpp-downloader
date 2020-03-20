@@ -1,0 +1,22 @@
+{
+  "name": "wpp-contact-downloader",
+  "version": "0.0.1",
+  "description": "Simple script for downloading WhatsApp Web contacts",
+  "main": "index.js",
+  "author": "Adrian Cerbaro <adriancerbaro@gmail.com>",
+  "scripts": {
+    "build": "babel src -d build"
+  },
+  "license": "MIT",
+  "private": false,
+  "devDependencies": {
+    "babel-cli": "^6.26.0",
+    "babel-minify": "^0.5.1",
+    "babel-plugin-minify-flip-comparisons": "^0.4.3",
+    "babel-plugin-minify-mangle-names": "^0.5.0",
+    "babel-plugin-minify-simplify": "^0.5.1",
+    "babel-plugin-transform-merge-sibling-variables": "^6.9.4",
+    "babel-preset-env": "^1.7.0",
+    "babel-preset-minify": "^0.5.1"
+  }
+}

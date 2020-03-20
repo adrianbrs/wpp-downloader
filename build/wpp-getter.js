@@ -1,0 +1,5 @@
+/** 
+ * WhatsApp Contact Downloader
+ * v0.0.1
+ * By Adrian Cerbaro
+ */(()=>{function a(a){let b=/^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;return b.test((a+"").toLowerCase())}let b=[],c=document.getElementsByClassName("rK2ei")[0].getElementsByClassName("_1v8mQ");for(let d=0;d<c.length;d++){let e=c[d],f=0<e.getElementsByTagName("img").length?e.getElementsByTagName("img")[0].src:"",g=e.getElementsByClassName("_3H4MS")[0].getElementsByTagName("span")[0].title,h=e.getElementsByClassName("_1VwzF")[0].getElementsByClassName("_22OEK")[0].getElementsByClassName("_F7Vk")[0].innerText,i="",j="";a(h)?i=h:j=h,b.push({nome:g,numero:j,email:i,foto:f})}let d="";for(let a,c=0;c<b.length;c++)a=b[c],d+=`${a.nome},${a.numero},${a.email}\r\n`;(function(a,b){let c=new Blob([b],{type:"text/csv"});if(window.navigator.msSaveOrOpenBlob)window.navigator.msSaveBlob(c,a);else{let b=window.document.createElement("a");b.href=window.URL.createObjectURL(c),b.download=a,document.body.appendChild(b),b.click(),document.body.removeChild(b)}})("contatos.csv",d)})();
