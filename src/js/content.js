@@ -4,14 +4,21 @@ $(document).ready(function() {
         if (port.name == "default-conn") {
             // Add listener to chanel port
             port.onMessage.addListener(msg => {
-                if (msg.command == "loadData") loadData();
+                if (msg.command == "loadData") {
+                    loadData().then(data =>
+                        port.postMessage({
+                            command: "updateData",
+                            data
+                        })
+                    );
+                }
             });
         }
 
         /**
          * Load contact data from chat
          */
-        function loadData() {
+        async function loadData() {
             let active = $(".X7YrQ ._2UaNq._3mMX1");
             let user = {
                 profile_pic: active.find("img.jZhyM._13Xdg._F7Vk").attr("src"),
@@ -22,7 +29,7 @@ $(document).ready(function() {
             let contact_list = [];
 
             // Single contact messages
-            $(".message-in")
+            $(".FTBzM")
                 .filter(function() {
                     return $(this)
                         .find("._2qE0x.copyable-text")
@@ -35,47 +42,53 @@ $(document).ready(function() {
                             .find("img")
                             .attr("src") || "";
                     let number =
-                        new URL(profile_pic).searchParams.get("u") || "";
+                        new URL(profile_pic).searchParams
+                            .get("u")
+                            .replace(/\D+/g, "") || "";
                     let name = $(this)
                         .find(".nUQs8 ._2LRBk.selectable-text")
                         .text();
-                    contact_list.push({ profile_pic, name, number, email: "" });
+
+                    let data = { profile_pic, name, number, email: "" };
+                    contact_list.push(data);
                 });
 
-            // Contact group
-            $(".message-in")
-                .filter(function() {
-                    return $(this)
-                        .find(".CqLtL")
-                        .find("._3j7-G").length;
-                })
-                .each(function() {
-                    $(this)
-                        .find("._1PENu .Ir_Ne")
-                        .click();
+            /**
+             * Create an async function to loading contacts from modals
+             * that needs to be rendered completely asynchronously
+             */
+            await Promise.all(
+                $(".FTBzM")
+                    .filter(function() {
+                        return $(this)
+                            .find(".CqLtL")
+                            .find("._3j7-G").length;
+                    })
+                    .map(async function() {
+                        // Load all contacts
+                        $(this)
+                            .find("._1PENu .Ir_Ne")
+                            .click();
 
-                    let container = $(".app-wrapper-web").find("span ._2t4Ic");
-                    let close_btn = container.find("header .qfKkX");
+                        let container = $(".app-wrapper-web")
+                            .find("span ._2t4Ic")
+                            .first();
+                        let close_btn = container.find("header .qfKkX");
 
-                    // Hide container for a while
-                    container.css("display", "none");
+                        // Hide container for a while
+                        container.css("display", "none");
 
-                    // Load all contacts
-                    let contacts = loadDialogContacts(container);
-                    $.merge(contact_list, contacts);
+                        // Load contacts from modal
+                        await loadDialogContacts(container).then(contacts => {
+                            $.merge(contact_list, contacts);
+                        });
 
-                    // Close current dialog
-                    close_btn.click();
-                });
+                        close_btn.click();
+                    })
+            );
 
-            // Send update message
-            port.postMessage({
-                command: "updateData",
-                data: {
-                    user,
-                    contact_list
-                }
-            });
+            // Return data to be sent to popup
+            return { user, contact_list };
         }
     });
 
@@ -83,18 +96,33 @@ $(document).ready(function() {
      * Load all contacts from WhatsApp contact list dialog
      * @param {object} container
      */
-    function loadDialogContacts(container) {
+    async function loadDialogContacts(container) {
         let contatos = [];
-        container.find(".rK2ei ._1v8mQ").each(function() {
-            let $cur = $(this);
-            let profile_pic = $cur.find("img").attr("src") || "";
-            let name = $cur.find("._3H4MS span").attr("title");
-            let data = { profile_pic, name, number: "", email: "" };
-            let contact = $cur.find("._1VwzF ._22OEK ._F7Vk").text();
-            if (validateEmail(contact)) data.email = contact;
-            else data.number = contact;
-            contatos.push(data);
-        });
+        await Promise.all(
+            $(container)
+                .find(".rK2ei ._1v8mQ")
+                .map(async function() {
+                    let $cur = $(this);
+                    let name = $cur.find("._3H4MS span").attr("title");
+                    let data = { profile_pic: "", name, number: "", email: "" };
+
+                    // Try to load profile pic
+                    await $cur.onAvailable("img").then($img => {
+                        data.profile_pic = $img.attr("src");
+                    });
+
+                    // Get contact number/email
+                    let contact = $cur
+                        .find("._1VwzF ._22OEK ._F7Vk")
+                        .first()
+                        .text();
+
+                    if (validateEmail(contact)) data.email = contact;
+                    else data.number = parseNumber(contact);
+                    contatos.push(data);
+                    console.log(data);
+                })
+        );
         return contatos;
     }
 
@@ -106,4 +134,44 @@ $(document).ready(function() {
         let re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
         return re.test(String(email).toLowerCase());
     }
+
+    /**
+     * Extract numbers from string
+     * @param {string} val
+     */
+    function parseNumber(val) {
+        return val.replace(/\D+/g, "");
+    }
 });
+
+/**
+ * Returns a promise that resolve when target is available
+ */
+$.fn.onAvailable = function(target, options = {}) {
+    let settings = $.extend(
+        {},
+        {
+            wait_time: 50,
+            max_tries: 70
+        },
+        options
+    );
+    return new Promise((solve, reject) => {
+        let selector = this;
+        let timer;
+        if (this.find(target).length) solve(this.find(target));
+        else {
+            let tries = 0;
+            timer = setInterval(() => {
+                let $target = selector.find(target);
+                if ($target.length) {
+                    solve($target);
+                    clearInterval(timer);
+                } else if (tries == settings.max_tries) {
+                    reject();
+                }
+                tries++;
+            }, settings.wait_time);
+        }
+    });
+};

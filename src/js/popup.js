@@ -33,7 +33,7 @@ $(document).ready(() => {
         if (!user.name) return;
 
         // Show popup content
-        $("#content").slideDown(300);
+        $("#content-wrapper .content").slideDown(300);
 
         // Set profile pic
         $("#profile-pic").attr("src", user.profile_pic);
@@ -60,10 +60,10 @@ $(document).ready(() => {
 
             $el.append(`
                 <img src="${contact.profile_pic ||
-                    "img/profile-pic.jpeg"}" alt="" class="profile-pic" />
+                    "img/profile-pic.svg"}" alt="" class="profile-pic" />
                 <div class="content">
                     <p class="name">${contact.name}</p>
-                    <p class="number">${contact.number}</p>
+                    <p class="number">${phoneNumber(contact.number)}</p>
                     <p class="email">${contact.email}</p>
                 </div>
             `);
@@ -176,6 +176,19 @@ $(document).ready(() => {
     }
 });
 
+/**
+ * Formats phone number output
+ * @param {string} number
+ */
+function phoneNumber(number) {
+    return number.replace(/(\d{2})(\d{2})(\d{4,5})(\d{4})/, "+$1 ($2) $3-$4");
+}
+
+/**
+ * Downloads a file with a content
+ * @param {string} filename
+ * @param {string} data
+ */
 function downloadFile(filename, data) {
     let blob = new Blob([data], { type: "text/csv" });
     if (window.navigator.msSaveOrOpenBlob) {

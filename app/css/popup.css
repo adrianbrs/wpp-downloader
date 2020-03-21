@@ -189,7 +189,8 @@ header p.usage {
   fill: #43A047;
 }
 
-#content {
+#content-wrapper {
+  min-height: 48px;
   position: relative;
 }
 
