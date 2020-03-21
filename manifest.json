@@ -3,18 +3,23 @@
     "version": "0.0.1",
     "description": "Download contacts sent to your WhatsApp easily.",
     "permissions": [
-        "storage",
+        "*://web.whatsapp.com/*",
         "declarativeContent",
         "activeTab"
     ],
     "background": {
-        "scripts": ["app/js/background.js"],
+        "scripts": ["app/js/background.min.js"],
         "persistent": false
     },
+    "content_scripts": [
+        {
+            "matches": ["*://web.whatsapp.com/*"],
+            "js": ["app/js/jquery-3.4.1.min.js", "app/js/content.min.js"]
+        }
+    ],
     "page_action": {
-        "default_popup": "app/popup.html",
-        "default_icon": {}
+        "default_title": "WhatsApp Contact Downloader",
+        "default_popup": "app/popup.html"
     },
-    "options_page": "app/options.html",
     "manifest_version": 2
 }

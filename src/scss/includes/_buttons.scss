@@ -1,0 +1,100 @@
+// Buttons
+
+.btn {
+    display: block;
+    position: relative;
+    padding: 6px 8px;
+    font-weight: bold;
+    text-transform: uppercase;
+    font-size: 14px;
+    border: 1px solid $black;
+    color: $black;
+    text-decoration: none;
+    text-align: center;
+    margin: 4px 0;
+    border-radius: 4px;
+    cursor: pointer;
+    outline: none;
+    width: 100%;
+    background-color: $white;
+    opacity: 1;
+    @include transition(0.1s ease-in);
+
+    &:not(.loading) {
+        &:hover {
+            background-color: $black;
+            color: $white;
+        }
+    }
+
+    &:active {
+        opacity: 0.8;
+    }
+
+    &.checkbox {
+        &,
+        &:hover {
+            font-size: 1.3em;
+            border: none;
+            background-color: transparent;
+            color: $grey;
+
+            &.checked {
+                color: $green;
+            }
+        }
+    }
+
+    &.icon {
+        border-radius: 50%;
+        width: 36px;
+        height: 36px;
+        text-align: center;
+        vertical-align: middle;
+
+        span {
+            font-size: 1.3em;
+        }
+    }
+
+    &[disabled] {
+        cursor: default !important;
+
+        &,
+        &:hover {
+            background-color: $white !important;
+            color: $light-grey-2 !important;
+            border-color: $light-grey-2 !important;
+        }
+    }
+
+    &.green {
+        color: $green;
+        border-color: $green;
+
+        &:not(.loading):hover {
+            background-color: $green;
+            color: $white;
+        }
+    }
+
+    &.loading {
+        cursor: default !important;
+        pointer-events: none !important;
+
+        .loading-icon {
+            opacity: 1;
+        }
+    }
+
+    .loading-icon {
+        width: 24px;
+        height: 24px;
+        position: absolute;
+        right: 8px;
+        top: 50%;
+        opacity: 0;
+        @include transform(translateY(-50%));
+        @include transition(0.2s ease-in);
+    }
+}

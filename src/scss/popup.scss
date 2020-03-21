@@ -1,2 +1,263 @@
-@charset "UTF-8";
+@import "includes/main";
 
+body {
+    color: #333;
+}
+
+main {
+    display: block;
+    position: relative;
+    width: 345px;
+    padding: 0 8px;
+}
+
+header {
+    p.usage {
+        width: 100%;
+        display: block;
+        text-align: center;
+        font-size: 12px;
+        color: #555;
+        border: 2px solid #555;
+        border-top-width: 0;
+        border-bottom-width: 0;
+    }
+}
+
+.tip {
+    $tip-color: $grey;
+    $tip-text-color: $almost-white;
+
+    color: $tip-text-color;
+    background-color: $tip-color;
+    font-size: 12px;
+    padding: 4px 8px;
+    font-weight: 300;
+    text-align: left;
+    border-radius: 2px;
+    display: block;
+    margin: 6px 0;
+    line-height: 1em;
+    position: relative;
+
+    &::after {
+        content: "";
+        display: block;
+        position: absolute;
+        width: 0;
+        height: 0;
+        border: 4px solid transparent;
+        left: 4px;
+        right: auto;
+    }
+
+    &.top {
+        top: -4px;
+        bottom: auto;
+
+        &::after {
+            bottom: 100%;
+            top: auto;
+            border-bottom-color: $tip-color;
+        }
+    }
+    &.bottom {
+        top: auto;
+        bottom: -4px;
+
+        &::after {
+            top: 100%;
+            bottom: auto;
+            border-top-color: $tip-color;
+        }
+    }
+    &.right::after {
+        right: 4px;
+        left: auto;
+    }
+    &.left::after {
+        left: 4px;
+        right: auto;
+    }
+}
+
+#loading-overlay {
+    z-index: 10;
+    display: block;
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    background-color: rgba(255, 255, 255, 0.65);
+    border-radius: 2px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    img {
+        width: 48px;
+        height: 48px;
+        fill: $green;
+    }
+}
+
+#content {
+    position: relative;
+}
+
+.selected-chat {
+    padding: 4px 6px;
+    margin: 4px 0;
+    border: 1px solid #efefef;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    position: relative;
+    max-width: 100%;
+
+    .refresh {
+        display: block;
+        flex: 0 auto;
+        padding: 8px;
+        height: 100%;
+    }
+
+    .profile-pic {
+        width: 49px;
+        height: 49px;
+        display: block;
+        overflow: hidden;
+        border-radius: 50%;
+        margin-right: 12px;
+        position: relative;
+        flex: 0 auto;
+
+        img:not(.loading) {
+            z-index: 2;
+            position: absolute;
+            max-width: 100%;
+            height: auto;
+            top: 50%;
+            left: 50%;
+            @include transform(translate(-50%, -50%));
+        }
+        .loading {
+            position: relative;
+            display: block;
+            width: 36px;
+            height: 36px;
+            top: 50%;
+            left: 50%;
+            @include transform(translate(-50%, -50%));
+        }
+    }
+
+    .content {
+        text-align: left;
+        width: 100%;
+        height: 100%;
+        padding: 2px 0;
+        flex: 1;
+
+        .name {
+            font-size: 17px;
+            margin-top: 0;
+            margin-bottom: auto;
+        }
+
+        p.contact-count {
+            font-size: 12px;
+            margin: 0;
+            color: $green;
+
+            &.empty {
+                color: $light-grey;
+            }
+            span {
+                font-weight: bold;
+            }
+        }
+    }
+}
+
+#contact-list {
+    position: relative;
+    display: block;
+    margin: 6px 0;
+
+    header {
+        padding: 6px 0;
+        display: flex;
+        flex-direction: row;
+        justify-content: center;
+
+        .select-all {
+            margin: 0;
+            flex: 1;
+
+            button {
+                display: inline-block;
+            }
+            & > span {
+                font-size: 1.2em;
+            }
+        }
+
+        .selected {
+            flex: 0 auto;
+            font-size: 12px;
+
+            span {
+                font-weight: bold;
+            }
+        }
+    }
+
+    .list {
+        position: relative;
+        max-height: 320px;
+        overflow-y: auto;
+        overflow-x: hidden;
+
+        .contact {
+            max-width: 100%;
+            display: block;
+            position: relative;
+            margin-bottom: 10px;
+            padding: 4px 6px;
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
+
+            &:not(:last-child) {
+                border-bottom: 1px solid #ccc;
+            }
+
+            img {
+                width: 40px;
+                height: 40px;
+                overflow: hidden;
+                border-radius: 50%;
+                margin-right: 12px;
+                flex: 0 auto;
+            }
+
+            .content {
+                flex: 1;
+
+                p {
+                    margin: 0 0 4px 0;
+                }
+                .name {
+                    font-size: 14px;
+                }
+                .number,
+                .email {
+                    font-size: 13px;
+                    font-weight: bold;
+                }
+            }
+        }
+    }
+}

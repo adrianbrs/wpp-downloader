@@ -1,0 +1,13 @@
+@charset "UTF-8";
+@import "colors";
+@import "mixins";
+@import "buttons";
+
+.loading img {
+    max-width: 100%;
+    height: auto;
+}
+
+.hidden {
+    display: none !important;
+}

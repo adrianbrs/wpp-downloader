@@ -6,5 +6,7 @@
             ],
             "url": "http://json.schemastore.org/chrome-manifest"
         }   
-    ]
+    ],
+    "prettier.tabWidth": 4,
+    "editor.formatOnSave": true
 }
