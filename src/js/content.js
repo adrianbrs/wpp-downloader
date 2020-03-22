@@ -141,7 +141,7 @@ $(document).ready(function() {
          * Load all contacts from WhatsApp contact list dialog
          * @param {boolean} single Single contact dialog
          */
-        async function loadDialogContacts(single = false) {
+        async function loadDialogContacts(single) {
             let $container = $(".app-wrapper-web")
                 .find("span ._2t4Ic")
                 .first();

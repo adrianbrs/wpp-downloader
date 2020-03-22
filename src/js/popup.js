@@ -128,6 +128,7 @@ $(document).ready(() => {
         $el.fadeIn(800);
 
         // Checkbox click listener
+        const $selectAll = $contactList.find("header .select-all .checkbox");
         $checkbox.click(function() {
             if (!toggleCheckbox(this)) toggleCheckbox($selectAll, false);
 
