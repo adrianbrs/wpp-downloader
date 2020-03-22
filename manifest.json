@@ -14,7 +14,11 @@
     "content_scripts": [
         {
             "matches": ["*://web.whatsapp.com/*"],
-            "js": ["app/js/jquery-3.4.1.min.js", "app/js/content.min.js"]
+            "js": [
+                "app/js/jquery-3.4.1.min.js",
+                "app/js/includes.min.js",
+                "app/js/content.min.js"
+            ]
         }
     ],
     "page_action": {

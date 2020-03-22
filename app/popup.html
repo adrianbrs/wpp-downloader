@@ -7,9 +7,10 @@
             href="https://cdn.materialdesignicons.com/5.0.45/css/materialdesignicons.min.css"
         />
         <script src="js/jquery-3.4.1.min.js"></script>
+        <script src="js/includes.min.js"></script>
         <script src="js/popup.min.js"></script>
     </head>
-    <body>
+    <body class="loading">
         <main>
             <header>
                 <p class="usage">
@@ -17,68 +18,93 @@
                 </p>
             </header>
 
-            <section id="content-wrapper">
-                <div id="loading-overlay">
-                    <img src="img/loading-dots.svg" alt="" />
-                </div>
+            <section id="content-wrapper" class="hidden">
+                <div class="content">
+                    <div class="chat-wrapper">
+                        <div class="loading-overlay">
+                            <img src="img/loading-dots.svg" alt="" />
+                        </div>
 
-                <div class="content" style="display:none;">
-                    <!-- Selected chat -->
-                    <div class="selected-chat">
-                        <div class="profile-pic">
-                            <img src="" alt="" id="profile-pic" />
-                            <img class="loading" src="img/loading.svg" alt="" />
+                        <!-- Selected chat -->
+                        <div class="selected-chat">
+                            <div class="profile-pic">
+                                <img src="" alt="" id="profile-pic" />
+                                <img
+                                    class="loading"
+                                    src="img/loading.svg"
+                                    alt=""
+                                />
+                            </div>
+                            <div class="content">
+                                <p class="name" id="profile-name"></p>
+                                <p class="contact-count empty">
+                                    <span id="contact-count-text">0</span>
+                                    contacts found
+                                </p>
+                            </div>
+                            <div class="refresh">
+                                <button class="btn green icon" id="refresh-btn">
+                                    <span class="mdi mdi-refresh"></span>
+                                </button>
+                            </div>
                         </div>
-                        <div class="content">
-                            <p class="name" id="profile-name">Nome da Pessoa</p>
-                            <p class="contact-count empty">
-                                <span id="contact-count">0</span> contacts
-                                found.
-                            </p>
-                        </div>
-                        <div class="refresh">
-                            <button class="btn green icon" id="refresh-btn">
-                                <span class="mdi mdi-refresh"></span>
-                            </button>
-                        </div>
+
+                        <!-- Load more tip -->
+                        <p class="tip top right">
+                            Scroll the chat to search for more contacts.
+                        </p>
                     </div>
-
-                    <!-- Load more tip -->
-                    <p class="tip top right">
-                        Scroll the chat to search for more contacts.
-                    </p>
 
                     <!-- Contact List -->
-                    <section id="contact-list" style="display: none;">
-                        <header>
-                            <p class="select-all">
-                                <button class="btn icon checkbox">
-                                    <span
-                                        class="mdi mdi-checkbox-blank-outline"
-                                    ></span>
+                    <section id="contact-list" class="hidden">
+                        <div class="contact-list-wrapper">
+                            <header>
+                                <p class="select-all">
+                                    <button
+                                        id="select-all-btn"
+                                        class="btn icon checkbox"
+                                    >
+                                        <span
+                                            class="mdi mdi-checkbox-blank-outline"
+                                        ></span>
+                                    </button>
+                                    <span>Select all</span>
+                                </p>
+                                <p class="selected">
+                                    <span id="selected-contact-count">0</span>
+                                    selected
+                                </p>
+                            </header>
+
+                            <!-- Contact List Items -->
+                            <div class="list">
+                                <div class="next-loading">
+                                    <div class="loading-overlay">
+                                        <img
+                                            src="img/loading-dots.svg"
+                                            alt=""
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Load Contacts Button -->
+                            <div class="actions" id="actions">
+                                <button
+                                    class="btn green"
+                                    id="download-btn"
+                                    href="#"
+                                >
+                                    DOWNLOAD
+                                    <img
+                                        class="loading-icon"
+                                        src="img/loading.svg"
+                                        alt=""
+                                    />
                                 </button>
-                                <span>Select all</span>
-                            </p>
-                            <p class="selected">
-                                <span id="selected-contact-count">0</span>
-                                selected
-                            </p>
-                        </header>
-
-                        <div class="list"></div>
+                            </div>
+                        </div>
                     </section>
-
-                    <!-- Load Contacts Button -->
-                    <div class="actions" id="actions" style="display: none;">
-                        <button class="btn green" id="download-btn" href="#">
-                            DOWNLOAD
-                            <img
-                                class="loading-icon"
-                                src="img/loading.svg"
-                                alt=""
-                            />
-                        </button>
-                    </div>
                 </div>
             </section>
         </main>

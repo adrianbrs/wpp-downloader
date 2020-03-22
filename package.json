@@ -16,5 +16,8 @@
         "grunt-contrib-sass": "^1.0.0",
         "grunt-contrib-uglify-es": "gruntjs/grunt-contrib-uglify#harmony",
         "grunt-contrib-watch": "^1.1.0"
+    },
+    "dependencies": {
+        "uuid": "^7.0.2"
     }
 }

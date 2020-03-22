@@ -1,147 +1,199 @@
 // Listen for messages
 $(document).ready(function() {
     chrome.runtime.onConnect.addListener(port => {
-        if (port.name == "default-conn") {
-            // Add listener to chanel port
-            port.onMessage.addListener(msg => {
-                if (msg.command == "loadData") {
-                    loadData().then(data =>
-                        port.postMessage({
-                            command: "updateData",
-                            data
-                        })
-                    );
-                }
-            });
+        // True if port has been disconnected
+        let isConnected = true;
+
+        // Port disconnect listener
+        port.onDisconnect.addListener(p => {
+            let error = p.error || chrome.runtime.lastError;
+            if (error) {
+                console.error(`Port disconnected due to an error: ${error}`);
+            }
+            isConnected = false;
+        });
+
+        // On message listener
+        port.onMessage.addListener(msg => {
+            if (msg.command == "loadData") {
+                loadData().then(data => {
+                    postMessage("updateDone", data);
+                });
+            }
+        });
+
+        /**
+         * Send message if port is connected
+         * @param {string} command Command name
+         * @param {object} data Data to be sent
+         */
+        function postMessage(command, data) {
+            if (isConnected) {
+                port.postMessage({ command, data });
+            }
         }
+
+        // Loaded contact list
+        let contactList = [];
+
+        /**
+         * Contact class
+         * @param {string} name
+         * @param {string} number
+         * @param {string} email
+         * @param {URL} profile_pic
+         */
+        let Contact = class {
+            constructor() {
+                this.name = this.profile_pic = "";
+                this.contacts = [];
+            }
+
+            /**
+             * Send this contact to the popup
+             */
+            post() {
+                const hashStr =
+                    this.name +
+                    this.contacts.reduce(
+                        (acc, val) => `${acc}.${val.value}`,
+                        ""
+                    );
+                this.id = Math.abs(hashCode(hashStr));
+
+                // Check if contact with this number and email already exists
+                const exists = contactList.find(c => c.id === this.id);
+                if (exists) return;
+
+                contactList.push(this);
+                postMessage("appendContact", this);
+            }
+        };
 
         /**
          * Load contact data from chat
          */
         async function loadData() {
+            // Reset loaded contact list
+            contactList = [];
+
+            // Load current chat user info
             let active = $(".X7YrQ ._2UaNq._3mMX1");
             let user = {
                 profile_pic: active.find("img.jZhyM._13Xdg._F7Vk").attr("src"),
                 name: active.find("._2WP9Q ._3NWy8 span").attr("title")
             };
 
-            // List of contact information
-            let contact_list = [];
+            // Filter all contact messages
+            const $singleContacts = $(".FTBzM").filter(function() {
+                return (
+                    $(this)
+                        .find("._2qE0x.copyable-text")
+                        .find("._2kIVZ")
+                        .find("._2LRBk").length && $(this).find(".Ir_Ne").length
+                );
+            });
+            const $contactGroups = $(".FTBzM").filter(function() {
+                return (
+                    $(this)
+                        .find(".CqLtL")
+                        .find("._3j7-G").length && $(this).find(".Ir_Ne").length
+                );
+            });
+
+            // Send a message with current chat info
+            postMessage("updateChatInfo", { user });
 
             // Single contact messages
-            $(".FTBzM")
-                .filter(function() {
-                    return $(this)
-                        .find("._2qE0x.copyable-text")
-                        .find("._3RWII")
-                        .find("img").length;
-                })
-                .each(function() {
-                    let profile_pic =
-                        $(this)
-                            .find("img")
-                            .attr("src") || "";
-                    let number =
-                        new URL(profile_pic).searchParams
-                            .get("u")
-                            .replace(/\D+/g, "") || "";
-                    let name = $(this)
-                        .find(".nUQs8 ._2LRBk.selectable-text")
-                        .text();
+            await Promise.all(
+                $singleContacts.map(async function() {
+                    // Load all contacts
+                    $(this)
+                        .find("._2qE0x ._2kIVZ")
+                        .click();
 
-                    let data = { profile_pic, name, number, email: "" };
-                    contact_list.push(data);
-                });
+                    // Load contacts from modal
+                    await loadDialogContacts(true);
+                })
+            );
 
             /**
              * Create an async function to loading contacts from modals
              * that needs to be rendered completely asynchronously
              */
             await Promise.all(
-                $(".FTBzM")
-                    .filter(function() {
-                        return $(this)
-                            .find(".CqLtL")
-                            .find("._3j7-G").length;
-                    })
-                    .map(async function() {
-                        // Load all contacts
-                        $(this)
-                            .find("._1PENu .Ir_Ne")
-                            .click();
+                $contactGroups.map(async function() {
+                    // Load all contacts
+                    $(this)
+                        .find("._1PENu .Ir_Ne")
+                        .click();
 
-                        let container = $(".app-wrapper-web")
-                            .find("span ._2t4Ic")
-                            .first();
-                        let close_btn = container.find("header .qfKkX");
-
-                        // Hide container for a while
-                        container.css("display", "none");
-
-                        // Load contacts from modal
-                        await loadDialogContacts(container).then(contacts => {
-                            $.merge(contact_list, contacts);
-                        });
-
-                        close_btn.click();
-                    })
+                    // Load contacts from modal
+                    await loadDialogContacts();
+                })
             );
 
             // Return data to be sent to popup
-            return { user, contact_list };
+            return contactList;
+        }
+
+        /**
+         * Load all contacts from WhatsApp contact list dialog
+         * @param {boolean} single Single contact dialog
+         */
+        async function loadDialogContacts(single = false) {
+            let $container = $(".app-wrapper-web")
+                .find("span ._2t4Ic")
+                .first();
+            let $close_btn = $container.find("header .qfKkX");
+
+            // Hide container for a while
+            $container.css("display", "none");
+
+            // Load contacts
+            let dialog_contacts = [];
+            await Promise.all(
+                $($container)
+                    .find(single ? ".rK2ei" : ".rK2ei ._1v8mQ")
+                    .map(async function() {
+                        let $cur = $(this);
+                        let contact = new Contact();
+
+                        // Contact name
+                        contact.name = $cur.find("._3H4MS span").attr("title");
+
+                        // Try to load profile pic
+                        await $cur
+                            .onAvailable("img")
+                            .then($img => {
+                                contact.profile_pic = $img.attr("src");
+                            })
+                            .catch(() => {});
+
+                        // Get contact available contacts ._.
+                        $cur.find("._1VwzF ._22OEK").each(function() {
+                            const name = $(this)
+                                .find(".fwByR")
+                                .text();
+                            const $valEl = $(this).find("._1VI-m");
+                            const value =
+                                $valEl.find("._F7Vk").text() || $valEl.text();
+                            contact.contacts.push({
+                                name,
+                                value,
+                                type: ContactType.parse(value)
+                            });
+                        });
+
+                        dialog_contacts.push(contact);
+                        contact.post();
+                    })
+            );
+
+            $close_btn.click();
+            return dialog_contacts;
         }
     });
-
-    /**
-     * Load all contacts from WhatsApp contact list dialog
-     * @param {object} container
-     */
-    async function loadDialogContacts(container) {
-        let contatos = [];
-        await Promise.all(
-            $(container)
-                .find(".rK2ei ._1v8mQ")
-                .map(async function() {
-                    let $cur = $(this);
-                    let name = $cur.find("._3H4MS span").attr("title");
-                    let data = { profile_pic: "", name, number: "", email: "" };
-
-                    // Try to load profile pic
-                    await $cur.onAvailable("img").then($img => {
-                        data.profile_pic = $img.attr("src");
-                    });
-
-                    // Get contact number/email
-                    let contact = $cur
-                        .find("._1VwzF ._22OEK ._F7Vk")
-                        .first()
-                        .text();
-
-                    if (validateEmail(contact)) data.email = contact;
-                    else data.number = parseNumber(contact);
-                    contatos.push(data);
-                    console.log(data);
-                })
-        );
-        return contatos;
-    }
-
-    /**
-     * Validate email address
-     * @param {string} email
-     */
-    function validateEmail(email) {
-        let re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-        return re.test(String(email).toLowerCase());
-    }
-
-    /**
-     * Extract numbers from string
-     * @param {string} val
-     */
-    function parseNumber(val) {
-        return val.replace(/\D+/g, "");
-    }
 });
 
 /**
@@ -151,8 +203,8 @@ $.fn.onAvailable = function(target, options = {}) {
     let settings = $.extend(
         {},
         {
-            wait_time: 50,
-            max_tries: 70
+            wait_time: 10,
+            max_tries: 100
         },
         options
     );

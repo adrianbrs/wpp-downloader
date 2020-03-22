@@ -4,13 +4,17 @@ $(document).ready(() => {
         const port = chrome.tabs.connect(tabs[0].id, { name: "default-conn" });
 
         // Request contact update message
-        requestUpdate();
+        port.postMessage({ command: "loadData" });
 
         // Listen for update message from client script
         port.onMessage.addListener(res => {
             // Update active chat
-            if (res.command == "updateData") {
-                updateData(res.data);
+            if (res.command == "updateDone") {
+                updateDone(res.data);
+            } else if (res.command == "updateChatInfo") {
+                updateChatInfo(res.data);
+            } else if (res.command == "appendContact") {
+                appendContact(res.data);
             }
         });
 
@@ -18,79 +22,138 @@ $(document).ready(() => {
         $("#refresh-btn").click(() => {
             location.reload();
         });
-
-        // Send a postMessage with loadData command
-        // and shows the loading overlay element
-        function requestUpdate() {
-            $("#loading-overlay").show();
-            port.postMessage({ command: "loadData" });
-        }
     });
 
-    // Fill data on popup HTML
-    function updateData(data) {
-        let { user, contact_list } = data;
-        if (!user.name) return;
+    // Loaded contact list
+    const loadedContacts = [];
+
+    /**
+     * Update contact count
+     */
+    function updateContactCounter() {
+        const $contactCount = $(".contact-count");
+        const $contactList = $("#contact-list");
+
+        if (loadedContacts.length > 0) {
+            if ($contactCount.hasClass("empty"))
+                $contactCount.removeClass("empty");
+
+            if (!$contactList.is(":visible")) {
+                $("#contact-list")
+                    .hide()
+                    .removeClass("hidden")
+                    .fadeIn();
+            }
+            $contactList.find(".contact-list-wrapper").show();
+            $("#download-btn").prop("disabled", true);
+            $("#select-all-btn").prop("disabled", true);
+        } else {
+            if (!$(".contact-count").hasClass("empty"))
+                $(".contact-count").addClass("empty");
+
+            $contactList.find(".contact-list-wrapper").hide();
+        }
+
+        // Fill contact list count
+        $("#contact-count-text").text(loadedContacts.length);
+    }
+
+    /**
+     * Updates opened chat user data
+     * @param {object} data
+     */
+    function updateChatInfo(data) {
+        const { user } = data;
+        if (!user.name) {
+            return;
+        }
 
         // Show popup content
-        $("#content-wrapper .content").slideDown(300);
+        $("#content-wrapper").removeClass("hidden");
 
         // Set profile pic
         $("#profile-pic").attr("src", user.profile_pic);
         $("#profile-name").text(user.name);
 
-        // Add empty class to contact count if have no contacts in the list
-        if (contact_list.length > 0) $(".contact-count").removeClass("empty");
-        else if (!$(".contact-count").hasClass("empty"))
-            $(".contact-count").addClass("empty");
+        // Show popup content
+        $("#content-wrapper .content").slideDown();
 
-        // Fill contact list count
-        $("#contact-count").text(contact_list.length);
+        // Hide loading overlay
+        $(".chat-wrapper .loading-overlay").hide();
+    }
 
-        // Insert contacts on contact list
+    /**
+     * Append a contact to the popup DOM contact list
+     * @param {object} contact
+     */
+    function appendContact(contact) {
+        loadedContacts.push(contact);
+
+        // Update counter
+        updateContactCounter();
+
+        // Append contact to the DOM
         const $contactList = $("#contact-list");
-        const $selectAll = $contactList.find("header .select-all .checkbox");
-        $contactList.hide();
+        const $list = $contactList.find(".list");
+        let $el = $(`<div class="contact"></div>`);
+        $el.data("contact", contact);
 
-        for (let i = 0; i < contact_list.length; i++) {
-            let contact = contact_list[i];
+        // Get first number and email
+        let number = contact.contacts.find(c => c.type === ContactType.PHONE);
+        number = number ? number.value : "";
+        let email = contact.contacts.find(c => c.type === ContactType.EMAIL);
+        email = email ? email.value : "";
 
-            let $el = $(`<div class="contact"></div>`);
-            $el.data("contact-index", i);
-
-            $el.append(`
+        $el.append(`
                 <img src="${contact.profile_pic ||
                     "img/profile-pic.svg"}" alt="" class="profile-pic" />
                 <div class="content">
                     <p class="name">${contact.name}</p>
-                    <p class="number">${phoneNumber(contact.number)}</p>
-                    <p class="email">${contact.email}</p>
+                    <p class="number">${phoneNumber(number)}</p>
+                    <p class="email">${email}</p>
                 </div>
             `);
 
-            let $actions = $(`<div class="actions"></div>`);
-            let $checkbox = $(`
+        let $actions = $(`<div class="actions"></div>`);
+        let $checkbox = $(`
                 <button class="btn icon select-item checkbox">
                     <span class="mdi mdi-checkbox-blank-outline"></span>
                 </button>
             `);
-            $actions.append($checkbox);
+        $actions.append($checkbox);
 
-            $el.append($actions);
-            $contactList.find(".list").append($el);
+        $el.append($actions);
+        $el.hide();
+        $el.insertBefore($list.find(".next-loading"));
+        $el.fadeIn(800);
 
-            $checkbox.click(function() {
-                if (!toggleCheckbox(this)) toggleCheckbox($selectAll, false);
+        // Checkbox click listener
+        $checkbox.click(function() {
+            if (!toggleCheckbox(this)) toggleCheckbox($selectAll, false);
 
-                // Check if all checkbox are marked
-                if (
-                    $contactList.find(".contact .checkbox.checked").length ===
-                    $contactList.find(".contact .checkbox").length
-                ) {
-                    toggleCheckbox($selectAll, true);
-                }
-            });
-        }
+            // Check if all checkbox are marked
+            if (
+                $contactList.find(".contact .checkbox.checked").length ===
+                $contactList.find(".contact .checkbox").length
+            ) {
+                toggleCheckbox($selectAll, true);
+            }
+        });
+
+        // Scroll list down
+        $list.stop().animate({ scrollTop: $list.prop("scrollHeight") }, 500);
+
+        // Check if contact list wrapper is shown
+        const $contactsWrapper = $("#contact-list .contact-list-wrapper");
+        if (!$contactsWrapper.is(":visible"))
+            $("#contact-list .contact-list-wrapper").slideDown();
+    }
+
+    // Finish contact loading
+    function updateDone(data) {
+        // Insert contacts on contact list
+        const $contactList = $("#contact-list");
+        const $selectAll = $contactList.find("header .select-all .checkbox");
 
         // Select all button
         $selectAll
@@ -104,13 +167,6 @@ $(document).ready(() => {
             })
             .click();
 
-        // Hide or show actions based on contact list count
-        if (contact_list.length > 0) $("#actions, #contact-list").slideDown();
-        else $("#actions, #contact-list").hide();
-
-        // Hide loading overlay
-        $("#loading-overlay").fadeOut();
-
         // Download button listener
         $("#download-btn").click(function() {
             // Get selected contacts
@@ -122,16 +178,28 @@ $(document).ready(() => {
                         .hasClass("checked");
                 })
                 .each(function() {
-                    contactsToDownload.push(
-                        contact_list[$(this).data("contact-index")]
-                    );
+                    let contactData = $(this).data("contact");
+                    let lc = loadedContacts.find(c => c.id === contactData.id);
+                    if (lc) contactsToDownload.push(lc);
                 });
 
             // Append contacts to a file
             let fileContent = "";
             for (let i = 0; i < contactsToDownload.length; i++) {
                 let contact = contactsToDownload[i];
-                fileContent += `${contact.name},${contact.number},${contact.email}\r\n`;
+
+                // Get first number and email
+                let phone = contact.contacts.find(
+                    c => c.type === ContactType.PHONE
+                );
+                phone = phone ? phone.value : "";
+                let email = contact.contacts.find(
+                    c => c.type === ContactType.EMAIL
+                );
+                email = email ? email.value : "";
+
+                // Add to file content
+                fileContent += `${contact.name}; ${phone}; ${email}\r\n`;
             }
 
             // Download file
@@ -142,6 +210,14 @@ $(document).ready(() => {
             if (fileName == "") fileName = "contacts";
             if (fileName != null) downloadFile(`${fileName}.csv`, fileContent);
         });
+
+        // Hide loading after load all contacts
+        $("#contact-list .next-loading").hide();
+
+        // Enable buttons
+        $("#download-btn").prop("disabled", false);
+        $("#select-all-btn").prop("disabled", false);
+        $("body").removeClass("loading");
     }
 
     /**
@@ -175,14 +251,6 @@ $(document).ready(() => {
         return !value;
     }
 });
-
-/**
- * Formats phone number output
- * @param {string} number
- */
-function phoneNumber(number) {
-    return number.replace(/(\d{2})(\d{2})(\d{4,5})(\d{4})/, "+$1 ($2) $3-$4");
-}
 
 /**
  * Downloads a file with a content
