@@ -13,4 +13,4 @@
 
 ---
 
-![Preview Image](https://github.com/adrianbrs/wpp-downloader/blob/media/preview.png?raw=true)
+![Preview Image](https://github.com/adrianbrs/wpp-downloader/blob/media/preview.png?raw=true | width=400){width="70%"}
