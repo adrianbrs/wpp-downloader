@@ -12,5 +12,6 @@
 -   Export contacts to CSV
 
 ---
-
-![Preview Image](https://github.com/adrianbrs/wpp-downloader/blob/media/preview.png?raw=true)
+<p align="center">
+  <img src="https://github.com/adrianbrs/wpp-downloader/blob/media/preview.png?raw=true" width="650">
+</p>
