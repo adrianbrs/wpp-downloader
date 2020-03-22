@@ -1,4 +1,4 @@
-/*! wpp-contact-downloader 2020-03-22 */
+/*! wpp-downloader 2020-03-22 */
 
 $(document).ready(() => {
     chrome.tabs.query({
@@ -20,9 +20,9 @@ $(document).ready(() => {
                 appendContact(res.data);
             }
         });
-        $("#refresh-btn").click(() => {
-            location.reload();
-        });
+    });
+    $("#refresh-btn").click(() => {
+        location.reload();
     });
     const loadedContacts = [];
     function updateContactCounter() {
@@ -154,50 +154,3 @@ function downloadFile(filename, data) {
         document.body.removeChild(elem);
     }
 }
-
-(function() {
-    class ScriptExecution {
-        constructor(tabId) {
-            this.tabId = tabId;
-        }
-        executeScripts(fileArray) {
-            fileArray = Array.prototype.slice.call(arguments);
-            return Promise.all(fileArray.map(file => exeScript(this.tabId, file))).then(() => this);
-        }
-        executeCodes(fileArray) {
-            fileArray = Array.prototype.slice.call(arguments);
-            return Promise.all(fileArray.map(code => exeCodes(this.tabId, code))).then(() => this);
-        }
-        injectCss(fileArray) {
-            fileArray = Array.prototype.slice.call(arguments);
-            return Promise.all(fileArray.map(file => exeCss(this.tabId, file))).then(() => this);
-        }
-    }
-    function promiseTo(fn, tabId, info) {
-        return new Promise(resolve => {
-            fn.call(chrome.tabs, tabId, info, x => resolve());
-        });
-    }
-    function exeScript(tabId, path) {
-        let info = {
-            file: path,
-            runAt: "document_end"
-        };
-        return promiseTo(chrome.tabs.executeScript, tabId, info);
-    }
-    function exeCodes(tabId, code) {
-        let info = {
-            code: code,
-            runAt: "document_end"
-        };
-        return promiseTo(chrome.tabs.executeScript, tabId, info);
-    }
-    function exeCss(tabId, path) {
-        let info = {
-            file: path,
-            runAt: "document_end"
-        };
-        return promiseTo(chrome.tabs.insertCSS, tabId, info);
-    }
-    window.ScriptExecution = ScriptExecution;
-})();

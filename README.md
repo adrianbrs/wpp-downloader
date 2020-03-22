@@ -1,6 +1,6 @@
-# WhatsApp Contact Downloader
+# WhatsApp Downloader
 
-## A simple Chrome extension to download contacts from WhatsApp Web conversations and groups.
+## Chrome extension to download contacts from WhatsApp Web.
 
 ---
 

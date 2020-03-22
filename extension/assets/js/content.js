@@ -1,4 +1,4 @@
-/*! wpp-contact-downloader 2020-03-22 */
+/*! wpp-downloader 2020-03-22 */
 
 $(document).ready(function() {
     chrome.runtime.onConnect.addListener(port => {

@@ -17,11 +17,11 @@ $(document).ready(() => {
                 appendContact(res.data);
             }
         });
+    });
 
-        // Refresh button
-        $("#refresh-btn").click(() => {
-            location.reload();
-        });
+    // Refresh button
+    $("#refresh-btn").click(() => {
+        location.reload();
     });
 
     // Loaded contact list
@@ -252,72 +252,3 @@ $(document).ready(() => {
         return !value;
     }
 });
-
-/**
- * Downloads a file with a content
- * @param {string} filename
- * @param {string} data
- */
-function downloadFile(filename, data) {
-    let blob = new Blob([data], { type: "text/csv" });
-    if (window.navigator.msSaveOrOpenBlob) {
-        window.navigator.msSaveBlob(blob, filename);
-    } else {
-        let elem = window.document.createElement("a");
-        elem.href = window.URL.createObjectURL(blob);
-        elem.download = filename;
-        document.body.appendChild(elem);
-        elem.click();
-        document.body.removeChild(elem);
-    }
-}
-
-// ScriptExecution class
-(function() {
-    class ScriptExecution {
-        constructor(tabId) {
-            this.tabId = tabId;
-        }
-        executeScripts(fileArray) {
-            fileArray = Array.prototype.slice.call(arguments); // ES6: Array.from(arguments)
-            return Promise.all(
-                fileArray.map(file => exeScript(this.tabId, file))
-            ).then(() => this); // 'this' will be use at next chain
-        }
-        executeCodes(fileArray) {
-            fileArray = Array.prototype.slice.call(arguments);
-            return Promise.all(
-                fileArray.map(code => exeCodes(this.tabId, code))
-            ).then(() => this);
-        }
-        injectCss(fileArray) {
-            fileArray = Array.prototype.slice.call(arguments);
-            return Promise.all(
-                fileArray.map(file => exeCss(this.tabId, file))
-            ).then(() => this);
-        }
-    }
-
-    function promiseTo(fn, tabId, info) {
-        return new Promise(resolve => {
-            fn.call(chrome.tabs, tabId, info, x => resolve());
-        });
-    }
-
-    function exeScript(tabId, path) {
-        let info = { file: path, runAt: "document_end" };
-        return promiseTo(chrome.tabs.executeScript, tabId, info);
-    }
-
-    function exeCodes(tabId, code) {
-        let info = { code: code, runAt: "document_end" };
-        return promiseTo(chrome.tabs.executeScript, tabId, info);
-    }
-
-    function exeCss(tabId, path) {
-        let info = { file: path, runAt: "document_end" };
-        return promiseTo(chrome.tabs.insertCSS, tabId, info);
-    }
-
-    window.ScriptExecution = ScriptExecution;
-})();
