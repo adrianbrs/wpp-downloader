@@ -1,0 +1,38 @@
+{
+    "name": "WhatsApp Downloader",
+    "version": "0.0.2",
+    "description": "Chrome extension to download contacts from WhatsApp Web.",
+    "author": "Adrian Cerbaro <adriancerbaro@gmail.com>",
+    "homepage_url": "https://github.com/adrianbrs/wpp-downloader",
+    "minimum_chrome_version": "21",
+    "manifest_version": 2,
+    "permissions": [
+        "*://web.whatsapp.com/*",
+        "declarativeContent",
+        "activeTab"
+    ],
+    "background": {
+        "scripts": ["assets/js/background.js"],
+        "persistent": false
+    },
+    "content_scripts": [
+        {
+            "matches": ["*://web.whatsapp.com/*"],
+            "js": [
+                "assets/js/jquery-3.4.1.min.js",
+                "assets/js/includes.js",
+                "assets/js/content.js"
+            ]
+        }
+    ],
+    "page_action": {
+        "default_title": "WhatsApp Downloader",
+        "default_popup": "pages/popup.html"
+    },
+    "icons": {
+        "16": "assets/icons/icon16.png",
+        "48": "assets/icons/icon48.png",
+        "32": "assets/icons/icon32.png",
+        "128": "assets/icons/icon128.png"
+    }
+}

@@ -3,7 +3,7 @@ module.exports = function(grunt) {
     grunt.initConfig({
         pkg: grunt.file.readJSON("package.json"),
         uglify: {
-            build: {
+            dev: {
                 options: {
                     beautify: true,
                     mangle: false,
@@ -15,21 +15,54 @@ module.exports = function(grunt) {
                     {
                         expand: true,
                         src: "**/*.js",
-                        dest: "app/js",
+                        dest: "extension/assets/js",
                         cwd: "src/js",
-                        ext: ".min.js"
+                        ext: ".js"
+                    }
+                ]
+            },
+            prod: {
+                options: {
+                    banner:
+                        '/*! <%= pkg.name %> <%= grunt.template.today("yyyy-mm-dd") %> */\n'
+                },
+                files: [
+                    {
+                        expand: true,
+                        src: "**/*.js",
+                        dest: "extension/assets/js",
+                        cwd: "src/js",
+                        ext: ".js"
                     }
                 ]
             }
         },
         sass: {
-            dist: {
+            dev: {
+                options: {
+                    style: "expanded",
+                    update: true
+                },
                 files: [
                     {
                         expand: true,
                         cwd: "src/scss",
                         src: ["*.scss"],
-                        dest: "app/css",
+                        dest: "extension/assets/css",
+                        ext: ".css"
+                    }
+                ]
+            },
+            prod: {
+                options: {
+                    style: "compressed"
+                },
+                files: [
+                    {
+                        expand: true,
+                        cwd: "src/scss",
+                        src: ["*.scss"],
+                        dest: "extension/assets/css",
                         ext: ".css"
                     }
                 ]
@@ -38,14 +71,14 @@ module.exports = function(grunt) {
         watch: {
             scripts: {
                 files: "src/js/**/*.js",
-                tasks: ["uglify"],
+                tasks: ["uglify:dev"],
                 options: {
                     interrupt: true
                 }
             },
             styles: {
                 files: "src/scss/**/*.scss",
-                tasks: ["sass"]
+                tasks: ["sass:dev"]
             }
         }
     });
@@ -56,6 +89,6 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks("grunt-contrib-watch");
 
     // Default task(s).
-    grunt.registerTask("default", ["uglify", "sass"]);
-    grunt.registerTask("dev", ["watch"]);
+    grunt.registerTask("default", ["watch"]);
+    grunt.registerTask("build", ["uglify:prod", "sass:prod"]);
 };

@@ -72,6 +72,7 @@ $(document).ready(() => {
         $el.hide();
         $el.insertBefore($list.find(".next-loading"));
         $el.fadeIn(800);
+        const $selectAll = $contactList.find("header .select-all .checkbox");
         $checkbox.click(function() {
             if (!toggleCheckbox(this)) toggleCheckbox($selectAll, false);
             if ($contactList.find(".contact .checkbox.checked").length === $contactList.find(".contact .checkbox").length) {

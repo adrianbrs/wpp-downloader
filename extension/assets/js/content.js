@@ -66,7 +66,7 @@ $(document).ready(function() {
             }));
             return contactList;
         }
-        async function loadDialogContacts(single = false) {
+        async function loadDialogContacts(single) {
             let $container = $(".app-wrapper-web").find("span ._2t4Ic").first();
             let $close_btn = $container.find("header .qfKkX");
             $container.css("display", "none");

@@ -5,7 +5,8 @@
     "main": "index.js",
     "author": "Adrian Cerbaro <adriancerbaro@gmail.com>",
     "scripts": {
-        "build": "babel src -d build"
+        "dev": "grunt",
+        "build": "grunt build"
     },
     "license": "MIT",
     "private": false,
