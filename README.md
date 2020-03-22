@@ -10,3 +10,7 @@
 -   Download the contact of all members of a group (coming soon)
 -   Download all your contacts (coming soon)
 -   Export contacts to CSV
+
+---
+
+![Preview Imagem](https://github.com/adrianbrs/wpp-downloader/docs/preview.png)

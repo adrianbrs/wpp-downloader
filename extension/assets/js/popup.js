@@ -31,7 +31,8 @@ $(document).ready(() => {
         if (loadedContacts.length > 0) {
             if ($contactCount.hasClass("empty")) $contactCount.removeClass("empty");
             if (!$contactList.is(":visible")) {
-                $("#contact-list").hide().removeClass("hidden").fadeIn();
+                if ($contactList.hasClass("hidden")) $contactList.hide().removeClass("hidden");
+                $contactList.fadeIn();
             }
             $contactList.find(".contact-list-wrapper").show();
             $("#download-btn").prop("disabled", true);
@@ -43,12 +44,20 @@ $(document).ready(() => {
         $("#contact-count-text").text(loadedContacts.length);
     }
     function updateChatInfo(data) {
-        const {user: user} = data;
+        const {user: user, hasContacts: hasContacts} = data;
         if (!user.name) {
             return;
         }
+        if (hasContacts) {
+            const $contactList = $("#contact-list");
+            if (!$contactList.is(":visible")) {
+                if ($contactList.hasClass("hidden")) $contactList.hide().removeClass("hidden");
+                $contactList.fadeIn();
+            }
+            $contactList.find(".contact-list-wrapper").show();
+        }
         $("#content-wrapper").removeClass("hidden");
-        $("#profile-pic").attr("src", user.profile_pic);
+        $("#profile-pic").attr("src", user.profile_pic || "/assets/img/profile-pic.svg");
         $("#profile-name").text(user.name);
         $("#content-wrapper .content").slideDown();
         $(".chat-wrapper .loading-overlay").hide();
@@ -64,7 +73,7 @@ $(document).ready(() => {
         number = number ? number.value : "";
         let email = contact.contacts.find(c => c.type === ContactType.EMAIL);
         email = email ? email.value : "";
-        $el.append(`\n                <img src="${contact.profile_pic || "img/profile-pic.svg"}" alt="" class="profile-pic" />\n                <div class="content">\n                    <p class="name">${contact.name}</p>\n                    <p class="number">${phoneNumber(number)}</p>\n                    <p class="email">${email}</p>\n                </div>\n            `);
+        $el.append(`\n                <img src="${contact.profile_pic || "/assets/img/profile-pic.svg"}" alt="" class="profile-pic" />\n                <div class="content">\n                    <p class="name">${contact.name}</p>\n                    <p class="number">${phoneNumber(number)}</p>\n                    <p class="email">${email}</p>\n                </div>\n            `);
         let $actions = $(`<div class="actions"></div>`);
         let $checkbox = $(`\n                <button class="btn icon select-item checkbox">\n                    <span class="mdi mdi-checkbox-blank-outline"></span>\n                </button>\n            `);
         $actions.append($checkbox);
@@ -83,7 +92,7 @@ $(document).ready(() => {
             scrollTop: $list.prop("scrollHeight")
         }, 500);
         const $contactsWrapper = $("#contact-list .contact-list-wrapper");
-        if (!$contactsWrapper.is(":visible")) $("#contact-list .contact-list-wrapper").slideDown();
+        if (!$contactsWrapper.is(":visible")) $contactsWrapper.slideDown();
     }
     function updateDone(data) {
         const $contactList = $("#contact-list");

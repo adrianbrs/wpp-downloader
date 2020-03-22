@@ -44,8 +44,8 @@ $(document).ready(function() {
             contactList = [];
             let active = $(".X7YrQ ._2UaNq._3mMX1");
             let user = {
-                profile_pic: active.find("img.jZhyM._13Xdg._F7Vk").attr("src"),
-                name: active.find("._2WP9Q ._3NWy8 span").attr("title")
+                profile_pic: active.find("img.jZhyM._13Xdg._F7Vk").attr("src") || "",
+                name: (active.find("._2WP9Q ._3NWy8 span") || active.find("._2WP9Q ._3H4MS span")).attr("title")
             };
             const $singleContacts = $(".FTBzM").filter(function() {
                 return $(this).find("._2qE0x.copyable-text").find("._2kIVZ").find("._2LRBk").length && $(this).find(".Ir_Ne").length;
@@ -54,7 +54,8 @@ $(document).ready(function() {
                 return $(this).find(".CqLtL").find("._3j7-G").length && $(this).find(".Ir_Ne").length;
             });
             postMessage("updateChatInfo", {
-                user: user
+                user: user,
+                hasContacts: $singleContacts.length || $contactGroups.length
             });
             await Promise.all($singleContacts.map(async function() {
                 $(this).find("._2qE0x ._2kIVZ").click();

@@ -80,8 +80,12 @@ $(document).ready(function() {
             // Load current chat user info
             let active = $(".X7YrQ ._2UaNq._3mMX1");
             let user = {
-                profile_pic: active.find("img.jZhyM._13Xdg._F7Vk").attr("src"),
-                name: active.find("._2WP9Q ._3NWy8 span").attr("title")
+                profile_pic:
+                    active.find("img.jZhyM._13Xdg._F7Vk").attr("src") || "",
+                name: (
+                    active.find("._2WP9Q ._3NWy8 span") ||
+                    active.find("._2WP9Q ._3H4MS span")
+                ).attr("title")
             };
 
             // Filter all contact messages
@@ -102,7 +106,10 @@ $(document).ready(function() {
             });
 
             // Send a message with current chat info
-            postMessage("updateChatInfo", { user });
+            postMessage("updateChatInfo", {
+                user,
+                hasContacts: $singleContacts.length || $contactGroups.length
+            });
 
             // Single contact messages
             await Promise.all(

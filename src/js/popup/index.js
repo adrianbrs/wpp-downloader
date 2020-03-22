@@ -39,10 +39,9 @@ $(document).ready(() => {
                 $contactCount.removeClass("empty");
 
             if (!$contactList.is(":visible")) {
-                $("#contact-list")
-                    .hide()
-                    .removeClass("hidden")
-                    .fadeIn();
+                if ($contactList.hasClass("hidden"))
+                    $contactList.hide().removeClass("hidden");
+                $contactList.fadeIn();
             }
             $contactList.find(".contact-list-wrapper").show();
             $("#download-btn").prop("disabled", true);
@@ -63,16 +62,30 @@ $(document).ready(() => {
      * @param {object} data
      */
     function updateChatInfo(data) {
-        const { user } = data;
+        const { user, hasContacts } = data;
         if (!user.name) {
             return;
+        }
+
+        // Show contact list if has contacts
+        if (hasContacts) {
+            const $contactList = $("#contact-list");
+            if (!$contactList.is(":visible")) {
+                if ($contactList.hasClass("hidden"))
+                    $contactList.hide().removeClass("hidden");
+                $contactList.fadeIn();
+            }
+            $contactList.find(".contact-list-wrapper").show();
         }
 
         // Show popup content
         $("#content-wrapper").removeClass("hidden");
 
         // Set profile pic
-        $("#profile-pic").attr("src", user.profile_pic);
+        $("#profile-pic").attr(
+            "src",
+            user.profile_pic || "/assets/img/profile-pic.svg"
+        );
         $("#profile-name").text(user.name);
 
         // Show popup content
@@ -106,7 +119,7 @@ $(document).ready(() => {
 
         $el.append(`
                 <img src="${contact.profile_pic ||
-                    "img/profile-pic.svg"}" alt="" class="profile-pic" />
+                    "/assets/img/profile-pic.svg"}" alt="" class="profile-pic" />
                 <div class="content">
                     <p class="name">${contact.name}</p>
                     <p class="number">${phoneNumber(number)}</p>
@@ -146,8 +159,7 @@ $(document).ready(() => {
 
         // Check if contact list wrapper is shown
         const $contactsWrapper = $("#contact-list .contact-list-wrapper");
-        if (!$contactsWrapper.is(":visible"))
-            $("#contact-list .contact-list-wrapper").slideDown();
+        if (!$contactsWrapper.is(":visible")) $contactsWrapper.slideDown();
     }
 
     // Finish contact loading
