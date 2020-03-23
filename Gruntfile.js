@@ -23,8 +23,10 @@ module.exports = grunt => {
             sass: [
                 {
                     expand: true,
-                    src: ["src/scss/*.scss"],
-                    dest: "extension/assets/css"
+                    src: ["**/*.scss", "!**/_*.scss"],
+                    cwd: "src/scss",
+                    dest: "extension/assets/css",
+                    ext: ".css"
                 }
             ]
         },

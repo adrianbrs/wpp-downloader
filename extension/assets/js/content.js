@@ -1,4 +1,4 @@
-/*! wpp-downloader 2020-03-22 */
+/*! wpp-downloader 2020-03-23 */
 
 $(document).ready(function() {
     chrome.runtime.onConnect.addListener(port => {
@@ -42,37 +42,42 @@ $(document).ready(function() {
         };
         async function loadData() {
             contactList = [];
-            let active = $(".X7YrQ ._2UaNq._3mMX1");
-            let user = {
-                profile_pic: active.find("img.jZhyM._13Xdg._F7Vk").attr("src") || "",
-                name: (active.find("._2WP9Q ._3NWy8 span") || active.find("._2WP9Q ._3H4MS span")).attr("title")
-            };
-            const $singleContacts = $(".FTBzM").filter(function() {
-                return $(this).find("._2qE0x.copyable-text").find("._2kIVZ").find("._2LRBk").length && $(this).find(".Ir_Ne").length;
-            });
-            const $contactGroups = $(".FTBzM").filter(function() {
-                return $(this).find(".CqLtL").find("._3j7-G").length && $(this).find(".Ir_Ne").length;
+            const user = {};
+            const $active = $(".X7YrQ ._2UaNq._3mMX1");
+            user.profile_pic = $active.find("img.jZhyM._13Xdg._F7Vk").attr("src");
+            user.name = $active.find("._2WP9Q ._3NWy8 span").attr("title");
+            if (!user.name) user.name = $active.find("._2WP9Q ._3H4MS span").attr("title");
+            const $contactMessages = $(".FTBzM").filter(function() {
+                return isContactMessage(this);
             });
             postMessage("updateChatInfo", {
                 user: user,
-                hasContacts: $singleContacts.length || $contactGroups.length
+                hasContacts: $contactMessages.length
             });
-            await Promise.all($singleContacts.map(async function() {
-                $(this).find("._2qE0x ._2kIVZ").click();
-                await loadDialogContacts(true);
-            }));
-            await Promise.all($contactGroups.map(async function() {
-                $(this).find("._1PENu .Ir_Ne").click();
-                await loadDialogContacts();
+            await Promise.all($contactMessages.map(async function() {
+                await loadMsgContacts(this);
             }));
             return contactList;
         }
-        async function loadDialogContacts(single) {
+        async function loadMsgContacts(msgNode) {
+            if (!isContactMessage(msgNode)) return;
+            const $msg = $(msgNode);
+            let $modalBtn = $msg.find("._2qE0x ._2kIVZ");
+            if (!$modalBtn.length) $modalBtn = $msg.find("._1PENu .Ir_Ne");
+            $modalBtn.click();
+            await loadDialogContacts(true);
+        }
+        function isContactMessage(node) {
+            return $(node).find("._2qE0x.copyable-text").find("._2kIVZ").find("._2LRBk").length && $(node).find(".Ir_Ne").length || $(node).find(".CqLtL").find("._3j7-G").length && $(node).find(".Ir_Ne").length;
+        }
+        async function loadDialogContacts() {
             let $container = $(".app-wrapper-web").find("span ._2t4Ic").first();
             let $close_btn = $container.find("header .qfKkX");
             $container.css("display", "none");
+            let $contacts = $container.find(".rK2ei ._1v8mQ");
+            if (!$contacts.length) $contacts = $container.find(".rK2ei");
             let dialog_contacts = [];
-            await Promise.all($($container).find(single ? ".rK2ei" : ".rK2ei ._1v8mQ").map(async function() {
+            await Promise.all($contacts.map(async function() {
                 let $cur = $(this);
                 let contact = new Contact();
                 contact.name = $cur.find("._3H4MS span").attr("title");
@@ -94,6 +99,24 @@ $(document).ready(function() {
             }));
             $close_btn.click();
             return dialog_contacts;
+        }
+        if ("MutationObserver" in window || "WebKitMutationObserver" in window) {
+            const $chatWrapper = $("#main ._1_q7u ._1_keJ ._1ays2");
+            if ($chatWrapper && $chatWrapper.length) {
+                const config = {
+                    childList: true
+                };
+                const callback = mutationsList => {
+                    for (let mutation of mutationsList) {
+                        if (mutation.type == "childList") {
+                            for (const node of mutation.addedNodes) loadMsgContacts(node);
+                        }
+                    }
+                };
+                let observer;
+                if ("MutationObserver" in window) observer = new MutationObserver(callback); else observer = new WebKitMutationObserver(callback);
+                observer.observe($chatWrapper.get(0), config);
+            }
         }
     });
 });

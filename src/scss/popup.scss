@@ -2,6 +2,8 @@
 
 body {
     color: #333;
+    margin: 0;
+    padding: 6px;
 }
 
 main {
@@ -13,7 +15,6 @@ main {
 
 header {
     p.usage {
-        width: 100%;
         display: block;
         text-align: center;
         font-size: 12px;

@@ -1,4 +1,4 @@
-/*! wpp-downloader 2020-03-22 */
+/*! wpp-downloader 2020-03-23 */
 
 $(document).ready(() => {
     chrome.tabs.query({
